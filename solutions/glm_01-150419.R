@@ -72,6 +72,13 @@ HeadlineWordsLog = glm(Popular ~. -X2015+big+billion+daili+make+obama+pari+pictu
 
 PredTest = predict(HeadlineWordsLog, newdata=HeadlineWordsTest, type="response")
 
+library(ROCR)
+PredTrain = predict(HeadlineWordsLog,data=HeadlineWordsTrain, type="response")
+predROCR = prediction(PredTrain, HeadlineWordsTrain$Popular)
+perfROCR = performance(predROCR, "tpr", "fpr")
+plot(perfROCR, colorize=TRUE)
+performance(predROCR, "auc")@y.values
+
 # Now we can prepare our submission file for Kaggle:
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
