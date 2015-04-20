@@ -12,6 +12,12 @@ NewsTest$PubDate = strptime(NewsTest$PubDate, "%Y-%m-%d %H:%M:%S")
 NewsTrain$Weekday = NewsTrain$PubDate$wday
 NewsTest$Weekday = NewsTest$PubDate$wday
 
+NewsTrain$hour = NewsTrain$PubDate$hour
+NewsTest$hour = NewsTest$PubDate$hour
+
+NewsTrain$Minute = NewsTrain$PubDate$min
+NewsTest$Minute = NewsTest$PubDate$min
+
 library(tm)
 
 # Create a corpus from the headline variable.
@@ -58,6 +64,12 @@ HeadlineWordsTest$SubsectionName  = NewsTest$SubsectionName
 HeadlineWordsTrain$Weekday  = NewsTrain$Weekday 
 HeadlineWordsTest$Weekday  = NewsTest$Weekday
 
+HeadlineWordsTrain$Hour  = NewsTrain$hour 
+HeadlineWordsTest$Hour  = NewsTest$hour
+
+HeadlineWordsTrain$Minute  = NewsTrain$Minute 
+HeadlineWordsTest$Minute  = NewsTest$Minute
+
 HeadlineWordsLog = glm(Popular ~ ., data=HeadlineWordsTrain, family=binomial)
 
 
@@ -68,4 +80,4 @@ PredTest = predict(HeadlineWordsLog, newdata=HeadlineWordsTest, type="response")
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
 
-write.csv(MySubmission, "Submissionglm_01.csv", row.names=FALSE)
+write.csv(MySubmission, "Submissionglm_03.csv", row.names=FALSE)
