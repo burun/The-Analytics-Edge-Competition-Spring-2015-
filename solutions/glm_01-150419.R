@@ -67,7 +67,7 @@ HeadlineWordsTest$Weekday  = NewsTest$Weekday
 HeadlineWordsTrain$Hour  = NewsTrain$hour 
 HeadlineWordsTest$Hour  = NewsTest$hour
 
-HeadlineWordsLog = glm(Popular ~ ., data=HeadlineWordsTrain, family=binomial)
+HeadlineWordsLog = glm(Popular ~. -X2015+big+billion+daili+make+obama+pari+pictur+small+springsumm, data=HeadlineWordsTrain, family=binomial)
 
 
 PredTest = predict(HeadlineWordsLog, newdata=HeadlineWordsTest, type="response")
@@ -76,4 +76,4 @@ PredTest = predict(HeadlineWordsLog, newdata=HeadlineWordsTest, type="response")
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
 
-write.csv(MySubmission, "Submissionglm_04.csv", row.names=FALSE)
+write.csv(MySubmission, "Submissionglm_05.csv", row.names=FALSE)
