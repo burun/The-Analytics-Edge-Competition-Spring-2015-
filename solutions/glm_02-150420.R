@@ -105,7 +105,7 @@ SnippetWordsLog = glm(Popular ~.-pari-use-secur-former, data=SnippetWordsTrain, 
 PredTest = predict(SnippetWordsLog, newdata=SnippetWordsTest, type="response")
 
 library(ROCR)
-PredTrain = predict(SnippetWordsLog, data=SnippetWordsTest, type="response")
+PredTrain = predict(SnippetWordsLog, data=SnippetWordsTrain, type="response")
 predROCR = prediction(PredTrain, SnippetWordsTrain$Popular)
 perfROCR = performance(predROCR, "tpr", "fpr")
 plot(perfROCR, colorize=TRUE)
