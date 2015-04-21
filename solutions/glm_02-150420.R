@@ -99,7 +99,7 @@ SnippetWordsTest$Hour  = NewsTest$hour
 
 
 # Make glm model
-SnippetWordsLog = glm(Popular ~.-X2015+archiv+bill+book+christma+clip+collect+come+email+famili+former+herald+newsroom+pari+part+pay+photo+secur+servic+thursday+use, data=SnippetWordsTrain, family=binomial)
+SnippetWordsLog = glm(Popular ~.-pari-use-secur-former, data=SnippetWordsTrain, family=binomial)
 
 
 PredTest = predict(SnippetWordsLog, newdata=SnippetWordsTest, type="response")
