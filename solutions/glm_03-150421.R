@@ -20,126 +20,86 @@ NewsTest$Minute = NewsTest$PubDate$min
 
 library(tm)
 
-# Create a corpus from the headline variable.
+# Create a corpus from the headline, Snippet and Abstract variables.
 
 CorpusHeadline = Corpus(VectorSource(c(NewsTrain$Headline, NewsTest$Headline)))
+CorpusSnippet = Corpus(VectorSource(c(NewsTrain$Snippet, NewsTest$Snippet)))
+CorpusAbstract = Corpus(VectorSource(c(NewsTrain$Abstract, NewsTest$Abstract)))
+
 
 CorpusHeadline = tm_map(CorpusHeadline, tolower)
-
-CorpusHeadline = tm_map(CorpusHeadline, PlainTextDocument)
-
-CorpusHeadline = tm_map(CorpusHeadline, removePunctuation)
-
-CorpusHeadline = tm_map(CorpusHeadline, removeWords, stopwords("english"))
-
-CorpusHeadline = tm_map(CorpusHeadline, stemDocument)
-
-
-dtm = DocumentTermMatrix(CorpusHeadline)
-
-sparse = removeSparseTerms(dtm, 0.99)
-
-HeadlineWords = as.data.frame(as.matrix(sparse))
-
-colnames(HeadlineWords) = make.names(colnames(HeadlineWords))
-
-HeadlineWordsTrain = head(HeadlineWords, nrow(NewsTrain))
-
-HeadlineWordsTest = tail(HeadlineWords, nrow(NewsTest))
-
-HeadlineWordsTrain$Snippet = NewsTrain$Snippet
-HeadlineWordsTest$Snippet = NewsTest$Snippet
-
-HeadlineWordsTrain$Abstract = NewsTrain$Abstract
-HeadlineWordsTest$Abstract = NewsTest$Abstract
-
-# Create a corpus from the Snippet variable.
-
-CorpusSnippet = Corpus(VectorSource(c(HeadlineWordsTrain$Snippet, HeadlineWordsTest$Snippet)))
-
 CorpusSnippet = tm_map(CorpusSnippet, tolower)
-
-CorpusSnippet = tm_map(CorpusSnippet, PlainTextDocument)
-
-CorpusSnippet = tm_map(CorpusSnippet, removePunctuation)
-
-CorpusSnippet = tm_map(CorpusSnippet, removeWords, stopwords("english"))
-
-CorpusSnippet = tm_map(CorpusSnippet, stemDocument)
-
-
-dtm_Snippet = DocumentTermMatrix(CorpusSnippet)
-
-sparse = removeSparseTerms(dtm_Snippet, 0.99)
-
-SnippetWords = as.data.frame(as.matrix(sparse))
-
-colnames(SnippetWords) = make.names(colnames(SnippetWords))
-
-SnippetWordsTrain = head(SnippetWords, nrow(HeadlineWordsTrain))
-
-SnippetWordsTest = tail(SnippetWords, nrow(HeadlineWordsTest))
-
-SnippetWordsTrain$Abstract = NewsTrain$Abstract
-SnippetWordsTest$Abstract = NewsTest$Abstract
-
-
-# Create a corpus from the Abstract variable.
-
-CorpusAbstract = Corpus(VectorSource(c(SnippetWordsTrain$Abstract, SnippetWordsTest$Abstract)))
-
 CorpusAbstract = tm_map(CorpusAbstract, tolower)
 
+CorpusHeadline = tm_map(CorpusHeadline, PlainTextDocument)
+CorpusSnippet = tm_map(CorpusSnippet, PlainTextDocument)
 CorpusAbstract = tm_map(CorpusAbstract, PlainTextDocument)
 
+CorpusHeadline = tm_map(CorpusHeadline, removePunctuation)
+CorpusSnippet = tm_map(CorpusSnippet, removePunctuation)
 CorpusAbstract = tm_map(CorpusAbstract, removePunctuation)
 
+CorpusHeadline = tm_map(CorpusHeadline, removeWords, stopwords("english"))
+CorpusSnippet = tm_map(CorpusSnippet, removeWords, stopwords("english"))
 CorpusAbstract = tm_map(CorpusAbstract, removeWords, stopwords("english"))
 
+CorpusHeadline = tm_map(CorpusHeadline, stemDocument)
+CorpusSnippet = tm_map(CorpusSnippet, stemDocument)
 CorpusAbstract = tm_map(CorpusAbstract, stemDocument)
 
 
-dtm_Abstract = DocumentTermMatrix(CorpusAbstract)
+dtmHeadline = DocumentTermMatrix(CorpusHeadline)
+dtmSnippet = DocumentTermMatrix(CorpusSnippet)
+dtmAbstract = DocumentTermMatrix(CorpusAbstract)
 
-sparse = removeSparseTerms(dtm_Abstract, 0.99)
+dtmHeadline = removeSparseTerms(dtmHeadline, 0.99)
+dtmSnippet = removeSparseTerms(dtmSnippet, 0.99)
+dtmAbstract = removeSparseTerms(dtmAbstract, 0.99)
 
-AbstractWords = as.data.frame(as.matrix(sparse))
+dtmHeadline = as.data.frame(as.matrix(dtmHeadline))
+dtmSnippet = as.data.frame(as.matrix(dtmSnippet))
+dtmAbstract = as.data.frame(as.matrix(dtmAbstract))
 
-colnames(AbstractWords) = make.names(colnames(AbstractWords))
+colnames(dtmHeadline) = paste0("H", colnames(dtmHeadline))
+colnames(dtmSnippet) = paste0("S", colnames(dtmSnippet))
+colnames(dtmAbstract) = paste0("A", colnames(dtmAbstract))
 
-AbstractWordsTrain = head(AbstractWords, nrow(SnippetWordsTrain))
+dtm = cbind(dtmHeadline, dtmSnippet, dtmAbstract)
 
-AbstractWordsTest = tail(AbstractWords, nrow(SnippetWordsTest))
 
-AbstractWordsTrain$Popular = NewsTrain$Popular
+dtmTrain = head(dtm, nrow(NewsTrain))
+dtmTest = tail(dtm, nrow(NewsTest))
 
-AbstractWordsTrain$WordCount = NewsTrain$WordCount
-AbstractWordsTest$WordCount = NewsTest$WordCount
 
-AbstractWordsTrain$NewsDesk = NewsTrain$NewsDesk
-AbstractWordsTest$NewsDesk = NewsTest$NewsDesk
+dtmTrain$Popular = NewsTrain$Popular
 
-AbstractWordsTrain$SectionName = NewsTrain$SectionName
-AbstractWordsTest$SectionName = NewsTest$SectionName
+dtmTrain$WordCount = NewsTrain$WordCount
+dtmTest$WordCount = NewsTest$WordCount
 
-AbstractWordsTrain$SubsectionName  = NewsTrain$SubsectionName 
-AbstractWordsTest$SubsectionName  = NewsTest$SubsectionName
+dtmTrain$NewsDesk = NewsTrain$NewsDesk
+dtmTest$NewsDesk = NewsTest$NewsDesk
 
-AbstractWordsTrain$Weekday  = NewsTrain$Weekday 
-AbstractWordsTest$Weekday  = NewsTest$Weekday
+dtmTrain$SectionName = NewsTrain$SectionName
+dtmTest$SectionName = NewsTest$SectionName
 
-AbstractWordsTrain$Hour  = NewsTrain$hour 
-AbstractWordsTest$Hour  = NewsTest$hour
+dtmTrain$SubsectionName  = NewsTrain$SubsectionName 
+dtmTest$SubsectionName  = NewsTest$SubsectionName
+
+dtmTrain$Weekday  = NewsTrain$Weekday 
+dtmTest$Weekday  = NewsTest$Weekday
+
+dtmTrain$Hour  = NewsTrain$hour 
+dtmTest$Hour  = NewsTest$hour
 
 # Make glm model
-AbstractWordsLog = glm(Popular ~.-famili-former-secur-thursday, data=AbstractWordsTrain, family=binomial)
+glmLog = glm(Popular ~., data=dtmTrain, family=binomial)
 
 
-PredTest = predict(AbstractWordsLog, newdata=AbstractWordsTest, type="response")
+PredTest = predict(glmLog, newdata=dtmTest, type="response")
 
 library(ROCR)
-PredTrain = predict(AbstractWordsLog, data=AbstractWordsTrain, type="response")
-predROCR = prediction(PredTrain, AbstractWordsTrain$Popular)
+PredTrain = predict(glmLog, data=dtmTrain, type="response")
+predROCR = prediction(PredTrain, dtmTrain$Popular)
 perfROCR = performance(predROCR, "tpr", "fpr")
 plot(perfROCR, colorize=TRUE)
 performance(predROCR, "auc")@y.values
@@ -148,4 +108,4 @@ performance(predROCR, "auc")@y.values
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
 
-write.csv(MySubmission, "Submissionglm_07.csv", row.names=FALSE)
+write.csv(MySubmission, "Submissionglm_08.csv", row.names=FALSE)
