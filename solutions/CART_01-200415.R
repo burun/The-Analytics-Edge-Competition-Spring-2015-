@@ -74,6 +74,13 @@ blogCART = rpart(Popular~., data=HeadlineWordsTrain, method="class")
 
 PredTest = predict(blogCART, newdata=HeadlineWordsTest)[,2]
 
+library(ROCR)
+PredTrain = predict(blogCART, data=HeadlineWordsTrain)[,2]
+predROCR = prediction(PredTrain, HeadlineWordsTrain$Popular)
+perfROCR = performance(predROCR, "tpr", "fpr")
+plot(perfROCR, colorize=TRUE)
+performance(predROCR, "auc")@y.values
+
 # Now we can prepare our submission file for Kaggle:
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
