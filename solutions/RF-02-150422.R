@@ -48,8 +48,8 @@ CorpusSnippet = tm_map(CorpusSnippet, stemDocument)
 dtmHeadline = DocumentTermMatrix(CorpusHeadline)
 dtmSnippet = DocumentTermMatrix(CorpusSnippet)
 
-dtmHeadline = removeSparseTerms(dtmHeadline, 0.99)
-dtmSnippet = removeSparseTerms(dtmSnippet, 0.99)
+dtmHeadline = removeSparseTerms(dtmHeadline, 0.97)
+dtmSnippet = removeSparseTerms(dtmSnippet, 0.97)
 
 dtmHeadline = as.data.frame(as.matrix(dtmHeadline))
 dtmSnippet = as.data.frame(as.matrix(dtmSnippet))
@@ -88,6 +88,7 @@ predROCR = prediction(PredTrain, dtmTrain$Popular)
 perfROCR = performance(predROCR, "tpr", "fpr")
 plot(perfROCR, colorize=TRUE)
 performance(predROCR, "auc")@y.values
+# 0.9380701
 
 # Now we can prepare our submission file for Kaggle:
 
