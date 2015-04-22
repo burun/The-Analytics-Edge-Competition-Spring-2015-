@@ -20,7 +20,7 @@ NewsTest$Minute = NewsTest$PubDate$min
 
 library(tm)
 
-# Create a corpus from the headline variable.
+# Create a corpus from the headline variables.
 
 CorpusHeadline = Corpus(VectorSource(c(NewsTrain$Headline, NewsTest$Headline)))
 
@@ -35,43 +35,43 @@ CorpusHeadline = tm_map(CorpusHeadline, removeWords, stopwords("english"))
 CorpusHeadline = tm_map(CorpusHeadline, stemDocument)
 
 
-dtm = DocumentTermMatrix(CorpusHeadline)
+dtmHeadline = DocumentTermMatrix(CorpusHeadline)
 
-sparse = removeSparseTerms(dtm, 0.99)
+dtmHeadline = removeSparseTerms(dtmHeadline, 0.99)
 
-HeadlineWords = as.data.frame(as.matrix(sparse))
+dtmHeadline = as.data.frame(as.matrix(dtmHeadline))
 
-colnames(HeadlineWords) = make.names(colnames(HeadlineWords))
+colnames(dtmHeadline) = paste0("H", colnames(dtmHeadline))
 
-HeadlineWordsTrain = head(HeadlineWords, nrow(NewsTrain))
 
-HeadlineWordsTest = tail(HeadlineWords, nrow(NewsTest))
+dtmTrain = head(dtmHeadline, nrow(NewsTrain))
+dtmTest = tail(dtmHeadline, nrow(NewsTest))
 
-HeadlineWordsTrain$Popular = NewsTrain$Popular
 
-HeadlineWordsTrain$WordCount = NewsTrain$WordCount
-HeadlineWordsTest$WordCount = NewsTest$WordCount
+dtmTrain$Popular = as.factor(NewsTrain$Popular)
 
-HeadlineWordsTrain$NewsDesk = NewsTrain$NewsDesk
-HeadlineWordsTest$NewsDesk = NewsTest$NewsDesk
+dtmTrain$LogWordCount = log(NewsTrain$WordCount)
+dtmTest$LogWordCount = log(NewsTest$WordCount)
 
-HeadlineWordsTrain$SectionName = NewsTrain$SectionName
-HeadlineWordsTest$SectionName = NewsTest$SectionName
+dtmTrain$Weekday  = as.numeric(NewsTrain$Weekday)
+dtmTest$Weekday  = as.numeric(NewsTest$Weekday)
 
-HeadlineWordsTrain$SubsectionName  = NewsTrain$SubsectionName 
-HeadlineWordsTest$SubsectionName  = NewsTest$SubsectionName
+dtmTrain$Hour  = as.numeric(NewsTrain$hour)
+dtmTest$Hour  = as.numeric(NewsTest$hour)
 
-HeadlineWordsTrain$Weekday  = NewsTrain$Weekday 
-HeadlineWordsTest$Weekday  = NewsTest$Weekday
-
-HeadlineWordsTrain$Hour  = NewsTrain$hour 
-HeadlineWordsTest$Hour  = NewsTest$hour
-
+# Make RF model
 
 library(randomForest)
-blogRF = randomForest(Popular~., data=HeadlineWordsTrain)
+blogRF = randomForest(Popular~.,data=dtmTrain, na.rm=TRUE)
 
-PredTest = predict(blogRF, newdata=HeadlineWordsTest, type="prob")[,2]
+PredTest = predict(blogRF, newdata=dtmTest, type="prob")[,2]
+
+library(ROCR)
+PredTrain = predict(blogRF, data=dtmTrain, type="prob")[,2]
+predROCR = prediction(PredTrain, dtmTrain$Popular)
+perfROCR = performance(predROCR, "tpr", "fpr")
+plot(perfROCR, colorize=TRUE)
+performance(predROCR, "auc")@y.values
 
 # Now we can prepare our submission file for Kaggle:
 

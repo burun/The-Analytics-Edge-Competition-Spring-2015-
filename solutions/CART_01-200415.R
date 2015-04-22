@@ -20,63 +20,77 @@ NewsTest$Minute = NewsTest$PubDate$min
 
 library(tm)
 
-# Create a corpus from the headline variable.
+# Create a corpus from the headline, Snippet and Abstract variables.
 
 CorpusHeadline = Corpus(VectorSource(c(NewsTrain$Headline, NewsTest$Headline)))
+CorpusSnippet = Corpus(VectorSource(c(NewsTrain$Snippet, NewsTest$Snippet)))
+
 
 CorpusHeadline = tm_map(CorpusHeadline, tolower)
+CorpusSnippet = tm_map(CorpusSnippet, tolower)
 
 CorpusHeadline = tm_map(CorpusHeadline, PlainTextDocument)
+CorpusSnippet = tm_map(CorpusSnippet, PlainTextDocument)
 
 CorpusHeadline = tm_map(CorpusHeadline, removePunctuation)
+CorpusSnippet = tm_map(CorpusSnippet, removePunctuation)
 
 CorpusHeadline = tm_map(CorpusHeadline, removeWords, stopwords("english"))
+CorpusSnippet = tm_map(CorpusSnippet, removeWords, stopwords("english"))
 
 CorpusHeadline = tm_map(CorpusHeadline, stemDocument)
+CorpusSnippet = tm_map(CorpusSnippet, stemDocument)
 
 
-dtm = DocumentTermMatrix(CorpusHeadline)
+dtmHeadline = DocumentTermMatrix(CorpusHeadline)
+dtmSnippet = DocumentTermMatrix(CorpusSnippet)
 
-sparse = removeSparseTerms(dtm, 0.99)
+dtmHeadline = removeSparseTerms(dtmHeadline, 0.995)
+dtmSnippet = removeSparseTerms(dtmSnippet, 0.995)
 
-HeadlineWords = as.data.frame(as.matrix(sparse))
+dtmHeadline = as.data.frame(as.matrix(dtmHeadline))
+dtmSnippet = as.data.frame(as.matrix(dtmSnippet))
 
-colnames(HeadlineWords) = make.names(colnames(HeadlineWords))
+colnames(dtmHeadline) = paste0("H", colnames(dtmHeadline))
+colnames(dtmSnippet) = paste0("S", colnames(dtmSnippet))
 
-HeadlineWordsTrain = head(HeadlineWords, nrow(NewsTrain))
+dtm = cbind(dtmHeadline, dtmSnippet)
 
-HeadlineWordsTest = tail(HeadlineWords, nrow(NewsTest))
 
-HeadlineWordsTrain$Popular = NewsTrain$Popular
+dtmTrain = head(dtm, nrow(NewsTrain))
+dtmTest = tail(dtm, nrow(NewsTest))
 
-HeadlineWordsTrain$WordCount = NewsTrain$WordCount
-HeadlineWordsTest$WordCount = NewsTest$WordCount
 
-HeadlineWordsTrain$NewsDesk = NewsTrain$NewsDesk
-HeadlineWordsTest$NewsDesk = NewsTest$NewsDesk
+dtmTrain$Popular = NewsTrain$Popular
 
-HeadlineWordsTrain$SectionName = NewsTrain$SectionName
-HeadlineWordsTest$SectionName = NewsTest$SectionName
+dtmTrain$WordCount = NewsTrain$WordCount
+dtmTest$WordCount = NewsTest$WordCount
 
-HeadlineWordsTrain$SubsectionName  = NewsTrain$SubsectionName 
-HeadlineWordsTest$SubsectionName  = NewsTest$SubsectionName
+dtmTrain$NewsDesk = NewsTrain$NewsDesk
+dtmTest$NewsDesk = NewsTest$NewsDesk
 
-HeadlineWordsTrain$Weekday  = NewsTrain$Weekday 
-HeadlineWordsTest$Weekday  = NewsTest$Weekday
+dtmTrain$SectionName = NewsTrain$SectionName
+dtmTest$SectionName = NewsTest$SectionName
 
-HeadlineWordsTrain$Hour  = NewsTrain$hour 
-HeadlineWordsTest$Hour  = NewsTest$hour
+dtmTrain$SubsectionName  = NewsTrain$SubsectionName 
+dtmTest$SubsectionName  = NewsTest$SubsectionName
+
+dtmTrain$Weekday  = NewsTrain$Weekday 
+dtmTest$Weekday  = NewsTest$Weekday
+
+dtmTrain$Hour  = NewsTrain$hour 
+dtmTest$Hour  = NewsTest$hour
 
 
 library(rpart)
 library(rpart.plot)
-blogCART = rpart(Popular~., data=HeadlineWordsTrain, method="class")
+blogCART = rpart(Popular~., data=dtmTrain, method="class")
 
-PredTest = predict(blogCART, newdata=HeadlineWordsTest)[,2]
+PredTest = predict(blogCART, newdata=dtmTest)[,2]
 
 library(ROCR)
-PredTrain = predict(blogCART, data=HeadlineWordsTrain)[,2]
-predROCR = prediction(PredTrain, HeadlineWordsTrain$Popular)
+PredTrain = predict(blogCART, data=dtmTrain)[,2]
+predROCR = prediction(PredTrain, dtmTrain$Popular)
 perfROCR = performance(predROCR, "tpr", "fpr")
 plot(perfROCR, colorize=TRUE)
 performance(predROCR, "auc")@y.values
