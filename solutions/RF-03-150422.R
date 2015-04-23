@@ -77,13 +77,19 @@ dtmTrain$Popular = as.factor(NewsTrain$Popular)
 
 # Make glm model
 library(randomForest)
-blogRF = randomForest(Popular~.,data=dtmTrain,type="prob",ntree=1000,nodesize=5)
+# blogRF = randomForest(Popular~.,data=dtmTrain,type="prob",ntree=1000,nodesize=5)
 
+Yvals = dtmTrain$Popular
+IndependentVars = dtmTrain
+IndependentVars$Popular = NULL # Drop the Dependent variable column
+library(caret)
+fitControl <- trainControl(classProbs = TRUE, summaryFunction = twoClassSummary)
+tr = train(IndependentVars, Yvals, method="rf", nodesize=4, ntree=1200, metric="ROC", trControl=fitControl)
 
-PredTest = predict(blogRF, newdata=dtmTest, type="prob")[,2]
+PredTest = predict(tr$finalModel, newdata=dtmTest, type="prob")[,2]
 
 library(ROCR)
-PredTrain = predict(blogRF, data=dtmTrain, type="prob")[,2]
+PredTrain = predict(tr$finalModel, data=dtmTrain, type="prob")[,2]
 predROCR = prediction(PredTrain, dtmTrain$Popular)
 perfROCR = performance(predROCR, "tpr", "fpr")
 plot(perfROCR, colorize=TRUE)
@@ -94,4 +100,4 @@ performance(predROCR, "auc")@y.values
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
 
-write.csv(MySubmission, "SubmissionRF_04.csv", row.names=FALSE)
+write.csv(MySubmission, "SubmissionRF_11.csv", row.names=FALSE)
