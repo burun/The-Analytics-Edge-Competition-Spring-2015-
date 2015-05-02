@@ -19,6 +19,18 @@ NewsAll$Weekday = NewsAll$PubDate$wday
 NewsAll$hour = NewsAll$PubDate$hour
 NewsAll$PubDate = NULL
 
+# Inpute missing values
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Opinion"] = "OpEd"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Arts"] = "Culture"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Business Day"] = "Business"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Crosswords/Games"] = "Business"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Travel"] = "Travel"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Health"] = "Science"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="N.Y. / Region"] = "Metro"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="Technology"] = "Business"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SectionName=="World"] = "Foreign"
+NewsAll$NewsDesk[NewsAll$NewsDesk=="" & NewsAll$SubsectionName=="Dealbook"] = "Business"
+
 # Remove "Snippet" variable
 NewsAll$Snippet = NULL
 str(NewsAll)
@@ -94,4 +106,4 @@ performance(predROCR, "auc")@y.values
 
 MySubmission = data.frame(UniqueID = NewsTest$UniqueID, Probability1 = PredTest)
 
-write.csv(MySubmission, "SubmissionRF_15.csv", row.names=FALSE)
+write.csv(MySubmission, "SubmissionRF_16.csv", row.names=FALSE)
